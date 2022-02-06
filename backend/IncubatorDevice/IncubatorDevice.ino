@@ -123,9 +123,7 @@ void reconnect() {
     if(client.connect(clientId.c_str(),mqtt_username,mqtt_password,"holder",0,false,"holder",true)) {
       
         Serial.println("soniclabs connected");
-    
-       
-        
+
         Sonic_Labs_Incubator_Temperature = temperature;
         Sonic_Labs_Incubator_Humidity=humidity;
         Sonic_Labs_Incubator_Fanspeed=output_temp_discrete;
