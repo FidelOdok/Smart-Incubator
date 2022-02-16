@@ -23,5 +23,4 @@ void connectToWiFi() {
     delay(500);
   }
   Serial.print("Connected.");
-  
 }
