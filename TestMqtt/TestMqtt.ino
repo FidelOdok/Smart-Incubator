@@ -6,13 +6,6 @@ const char *SSID = "Trip";
 const char *PWD = "potential";
 
 
-void setup() {
-  Serial.begin(9600);
-  connectToWiFi();
-  
-}
-
-
 void connectToWiFi() {
   Serial.print("Connectiog to ");
  
@@ -24,3 +17,10 @@ void connectToWiFi() {
   }
   Serial.print("Connected.");
 }
+
+void setup() {
+  Serial.begin(9600);
+  connectToWiFi();
+  
+}
+
