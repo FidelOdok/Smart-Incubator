@@ -24,4 +24,8 @@ void connectToWiFi() {
 }
 
 
+void loop() {
+}
+
+
 
