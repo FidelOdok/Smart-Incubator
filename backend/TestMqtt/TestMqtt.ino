@@ -1,7 +1,16 @@
 #include <Arduino.h>
 #include <WiFi.h>
+
+
 const char *SSID = "Trip";
 const char *PWD = "potential";
+
+void setup() {
+  Serial.begin(9600);
+  connectToWiFi();
+  
+}
+
 void connectToWiFi() {
   Serial.print("Connectiog to ");
  
@@ -12,5 +21,7 @@ void connectToWiFi() {
     delay(500);
   }
   Serial.print("Connected.");
-  
 }
+
+
+
