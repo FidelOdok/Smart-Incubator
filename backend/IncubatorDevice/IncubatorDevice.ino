@@ -1,4 +1,3 @@
-#include "dimmable_light.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h> 
 #include <WiFiClientSecure.h>
@@ -7,9 +6,7 @@
 #include <WiFiClient.h>
 #include <math.h>
 #include <EEPROM.h>
-#include "DHTesp.h" // Click here to get the library: http://librarymanager/All#DHTesp
-#include <Servo.h> 
-#include <FastPID.h>
+
 
 
 #define EEPROM_SIZE 100
@@ -23,8 +20,8 @@
 //Server Connections
 const char* mqtt_server = "44c7696b3bf2419fb93433ab8e5799fa.s1.eu.hivemq.cloud";
 const int mqtt_port =8883;
-const char* mqtt_username = "soniclabs";
-const char* mqtt_password = "Sonic@54321";
+const char* mqtt_username = "Wattflow";
+const char* mqtt_password = "Wattflow@4321";
 
 //Message buffer
 unsigned long lastMsg = 0;
@@ -35,41 +32,62 @@ int value =0;
 /***
  Device battery Status declerations
 ***/
-const int syncPin = D7;
-const int thyristorPin = D5;
+float maxVolt=0;
+float minVolt=0;
+float maxTemp=0;
+float minTemp=0;
+float remainCap=0;
+float totalVolt=0;
+float current=0;
+float SOC=0;
+int numCells=0;
+int numString=0;
 
-int period = 50;
 
-unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE  (100)
-char msg[MSG_BUFFER_SIZE];
-int value =0;
-float Sonic_Labs_Incubator_Temperature=0;
-float Sonic_Labs_Incubator_Humidity=0;
-float Sonic_Labs_Incubator_Fanspeed=0;
-float Sonic_Labs_Incubator_InputVoltage=0;
-float Sonic_Labs_Incubator_OutputVoltage=0;
-int Sonic_Labs_Incubator_Temperature_Recieve=37;
-float Sonic_Labs_Incubator_Humidity_Recieve=40;
-int milliseconds=0;
+const char* PARAM_INPUT_1 = "input1";
+const char* PARAM_INPUT_2 = "input2";
 
-float humidity = 0;
-float temperature = 0;  
 
-int output_temp_discrete;
+/***
+Cell Voltage Variable
+***/
+float block1volt=0;
+float block2volt=0;
+float block3volt=0;
+float block4volt=0;
+float block5volt=0;
+float block6volt=0;
+float block7volt=0;
+float block8volt=0;
+float block9volt=0;
+float block10volt=0;
+float block11volt=0;
+float block12volt=0;
+float block13volt=0;
+float block14volt=0;
 
-float Kp=200, Ki=0.5, Kd=0, Hz=40000;
-int output_bits = 8;
-bool output_signed = false;
-
-FastPID myPID(Kp, Ki, Kd, Hz, output_bits, output_signed);
-bool outputRange = myPID.setOutputRange(0, 255);
-
-int pos=0;
-
-DimmableLight light(thyristorPin);
-DHTesp dht;
-Servo myservo;
+/***
+Internal Resistance Variable
+***/
+float block1Res=0;
+float block2Res=0;
+float block3Res=0;
+float block4Res=0;
+float block5Res=0;
+float block6Res=0;
+float block7Res=0;
+float block8Res=0;
+float block9Res=0;
+float block10Res=0;
+float block11Res=0;
+float block12Res=0;
+float block13Res=0;
+float block14Res=0;
+/***
+Temperature Variable
+***/
+float temp1=0;
+float temp2=0;
 
 bool accesspoint = true;
 //Time elapsed
@@ -110,6 +128,25 @@ void setup_wifi() {
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
+      Serial.print("Message arrived [");
+      Serial.print(topic);
+      Serial.print("] ");
+      
+      for (int i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+      }
+      Serial.println();
+
+      if ((char)payload[0] == '0') {
+        Serial.println("OFF");
+        digitalWrite(ledPin, HIGH); 
+        digitalWrite(dataPin,HIGH); 
+      }
+      else if ((char)payload[0] == '1') {
+        Serial.println("ON");
+        digitalWrite(ledPin, LOW);  
+         digitalWrite(dataPin,LOW); 
+      }
 
 }
 
@@ -118,35 +155,75 @@ void reconnect() {
   
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
-    String clientId = "soniclabs";
+    String clientId = "wattflow";
     clientId += String(deviceID);
     if(client.connect(clientId.c_str(),mqtt_username,mqtt_password,"holder",0,false,"holder",true)) {
       
-        Serial.println("soniclabs connected");
+        Serial.println("wattflow connected");
+    
+        maxVolt=4.0 + sin(random(1,3));
+        minVolt=3.1 + sin(random(1,3));
+        maxTemp=27 + sin(random(1,3));
+        minTemp=20 + sin(random(1,3));
+        remainCap=50 + sin(random(10,30));
+        totalVolt=49+ sin(random(1,3));
+        current=15 + sin(random(1,3));
+        SOC=60 + sin(random(10,30));
+        numCells=600;
+        numString=14;
 
-        Sonic_Labs_Incubator_Temperature = temperature;
-        Sonic_Labs_Incubator_Humidity=humidity;
-        Sonic_Labs_Incubator_Fanspeed=output_temp_discrete;
-        Sonic_Labs_Incubator_InputVoltage=228.3;
-        Sonic_Labs_Incubator_OutputVoltage=220.5;
+
+        block1volt=4.0 + sin(random(1,3));
+        block2volt=4.0 + sin(random(1,3));
+        block3volt=4.0 + sin(random(1,3));
+        block4volt=4.0 + sin(random(1,3));
+        block5volt=3.0 + sin(random(1,4));
+        block6volt=4.0 + sin(random(1,4));
+        block7volt=3.0 + sin(random(1,4));
+        block8volt=3.0 + sin(random(1,4));
+        block9volt=3.0 + sin(random(1,3));
+        block10volt=3.0 + sin(random(1,4));
+        block11volt=4.0 + sin(random(1,3));
+        block12volt=3.0 + sin(random(1,4));
+        block13volt=4.0 + sin(random(1,3));
+        block14volt=3.0 + sin(random(1,4));
+
+        block1Res=1.0 + sin(random(1,3));
+        block2Res=1.0 + sin(random(1,3));
+        block3Res=1.0 + sin(random(1,3));
+        block4Res=0.0 + sin(random(1,3));
+        block5Res=0.0 + sin(random(1,4));
+        block6Res=0.0 + sin(random(1,4));
+        block7Res=0.0 + sin(random(1,4));
+        block8Res=0.0 + sin(random(1,4));
+        block9Res=0.0 + sin(random(1,3));
+        block10Res=0.0 + sin(random(1,4));
+        block11Res=0.0 + sin(random(1,3));
+        block12Res=001.0 + sin(random(1,4));
+        block13Res=00.0 + sin(random(1,3));
+        block14Res=0003.0 + sin(random(1,4));
+
+        temp1 = 25.0 + sin(random(1,4));
+        temp2 = 25.0 + sin(random(1,4));
         
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"},\"minVolt\":{\"value\":%f,\"unit\":\"v\"},\"maxTemp\":{\"value\":%f,\"unit\":\"C\"},\"minTemp\":{\"value\":%f,\"unit\":\"C\"},\"remainCap\":{\"value\":%f,\"unit\":\"Ah\"},\"totalVolt\":{\"value\":%f,\"unit\":\"v\"},\"current\":{\"value\":%f,\"unit\":\"A\"},\"SOC\":%f,\"numCells\":%i,\"numString\":%i,\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}", maxVolt,minVolt,maxTemp,minTemp,remainCap,totalVolt,current,SOC,numCells,numString,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/batteryStatus", msg);
         
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"Temperature\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_Temperature,milliseconds);
-        client.publish("Sonic-Labs-Incubator-Temperature", msg);
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"Humidity\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_Humidity,milliseconds);
-        client.publish("Sonic-Labs-Incubator-Humidity", msg);
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"Fanspeed\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_Fanspeed,milliseconds);
-        client.publish("Sonic-Labs-Incubator-Fanspeed", msg);
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"InputVoltage\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_InputVoltage,milliseconds);
-        client.publish("Sonic-Labs-Incubator-InputVoltage", msg);
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"OutputVoltage\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_OutputVoltage,milliseconds);
-        client.publish("Sonic-Labs-Incubator-OutputVoltage", msg);
-        
-        client.subscribe("Sonic-Labs-Incubator-Temperature-Recieve");
-        client.subscribe("Sonic-Labs-Incubator-Humidity-Recieve");
-        client.subscribe("Sonic-Labs-Incubator-P-Recieve");
-        client.subscribe("Sonic-Labs-Incubator-I-Recieve");
-        client.subscribe("Sonic-Labs-Incubator-D-Recieve");      
+        snprintf(msg, MSG_BUFFER_SIZE,"{\"block1\":%f,\"block2\":%f,\"block3\":%f,\"block4\":%f,\"block5\":%f,\"block6\":%f,\"block7\":%f,\"block8\":%f,\"block9\":%f,\"block10\":%f,\"block11\":%f,\"block12\":%f,\"block13\":%f,\"block14\":%f,\"unit\":\"v\",\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",block1volt,block2volt,block3volt,block4volt,block5volt,block6volt,block7volt,block8volt,block9volt,block10volt,block11volt,block12volt,block13volt,block14volt,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/cellVoltage", msg);
+
+         snprintf(msg, MSG_BUFFER_SIZE,"{\"block1\":%f,\"block2\":%f,\"block3\":%f,\"block4\":%f,\"block5\":%f,\"block6\":%f,\"block7\":%f,\"block8\":%f,\"block9\":%f,\"block10\":%f,\"block11\":%f,\"block12\":%f,\"block13\":%f,\"block14\":%f,\"unit\":\"v\",\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",block1Res,block2Res,block3Res,block4Res,block5Res,block6Res,block7Res,block8Res,block9Res,block10Res,block11Res,block12Res,block13Res,block14Res,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/internalResistance", msg);
+
+
+         snprintf(msg, MSG_BUFFER_SIZE,"{\"voltageLow\":%i,\"tempHigh\":%i,\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",true,true,milliseconds,deviceID);
+        ispublished =   client.publish("data/Alerts", msg);
+     
+        snprintf(msg, MSG_BUFFER_SIZE,"{\"temp1\":%f,\"temp2\":%f,\"unit\":\"C\",\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",temp1,temp2,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/batteryTemperature", msg);
+     
+        client.subscribe("2345/control/deviceState");
+        client.subscribe("2345/control/deviceSettings");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -171,23 +248,10 @@ void setup() {
   client.setCallback(callback);
   bool sizeBuff= client.setBufferSize(512);
   Serial.println(sizeBuff);
-
-  DimmableLight::setSyncPin(syncPin);
-  DimmableLight::begin();
-  
-  dht.setup(16, DHTesp::DHT11);
-  client.subscribe("Sonic-Labs-Incubator-Temperature-Recieve");
-  client.subscribe("Sonic-Labs-Incubator-Humidity-Recieve");
-  client.subscribe("Sonic-Labs-Incubator-P-Recieve");
-  client.subscribe("Sonic-Labs-Incubator-I-Recieve");
-  client.subscribe("Sonic-Labs-Incubator-D-Recieve");
-
-
-  pinMode(D8,OUTPUT);
-  randomSeed(micros());
-  myservo.write(0);
-  myservo.attach(D3);
-  delay(100);
+  pinMode(ledPin, OUTPUT);
+  pinMode(dataPin, OUTPUT);
+  client.subscribe("2345/control/deviceState");
+  client.subscribe("2345/control/deviceSettings");
 }
 
 void loop() {
@@ -198,59 +262,71 @@ void loop() {
   client.loop();
   unsigned long now = millis();
   milliseconds = now;
-  if (now - lastMsg > 200) {
-      lastMsg = now;
-      if(value<30)value++;
-      else value=5;
-      //delay(dht.getMinimumSamplingPeriod());
-      
-      // humidity = dht.getHumidity();
-      // temperature = dht.getTemperature();  
-
-      humidity = sin(value)+value;
-      temperature = cos(value)+value;  
-
-      Sonic_Labs_Incubator_Temperature = temperature;
-      Sonic_Labs_Incubator_Humidity=humidity;
-      Sonic_Labs_Incubator_Fanspeed=output_temp_discrete;
-      Sonic_Labs_Incubator_InputVoltage=228.3 + value;
-      Sonic_Labs_Incubator_OutputVoltage=220.5 + value;
-      
-      
-      snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"Temperature\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_Temperature,milliseconds);
-      client.publish("Sonic-Labs-Incubator-Temperature", msg);
-      snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"Humidity\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_Humidity,milliseconds);
-      client.publish("Sonic-Labs-Incubator-Humidity", msg);
-      snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"Fanspeed\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_Fanspeed,milliseconds);
-      client.publish("Sonic-Labs-Incubator-Fanspeed", msg);
-      snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"InputVoltage\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_InputVoltage,milliseconds);
-      client.publish("Sonic-Labs-Incubator-InputVoltage", msg);
-      snprintf(msg, MSG_BUFFER_SIZE, "{\"name\": \"OutputVoltage\",\"value\":%f,\"unit\":\"C\",\"time\":%ld}", Sonic_Labs_Incubator_OutputVoltage,milliseconds);
-      client.publish("Sonic-Labs-Incubator-OutputVoltage", msg);
-    }
+  if (now - lastMsg > 5000) {
+        lastMsg = now;
+        if(value<30)value++;
+        else value=5;
+     
     
-    output_temp_discrete = myPID.step(Sonic_Labs_Incubator_Temperature_Recieve,(int)Sonic_Labs_Incubator_Temperature);
-    light.setBrightness(output_temp_discrete);
-    period = 8000;
-    delay(period);
+        maxVolt=4.0 + sin(random(1,3));
+        minVolt=3.1 + sin(random(1,3));
+        maxTemp=27 + sin(random(1,3));
+        minTemp=20 + sin(random(1,3));
+        remainCap=50 + sin(random(10,30));
+        totalVolt=49+ sin(random(1,3));
+        current=15 + sin(random(1,3));
+        SOC=60 + sin(random(10,30));
+        numCells=600;
+        numString=14;
 
-    rotateEggs();
-    delay(100);
 
-    if(Sonic_Labs_Incubator_Temperature >Sonic_Labs_Incubator_Temperature_Recieve)digitalWrite(D8,HIGH);
-    else digitalWrite(D8,LOW);
+        
+        block1volt=4.0 + sin(random(1,3));
+        block2volt=4.0 + sin(random(1,3));
+        block3volt=4.0 + sin(random(1,3));
+        block4volt=4.0 + sin(random(1,3));
+        block5volt=3.0 + sin(random(1,4));
+        block6volt=4.0 + sin(random(1,4));
+        block7volt=3.0 + sin(random(1,4));
+        block8volt=3.0 + sin(random(1,4));
+        block9volt=3.0 + sin(random(1,3));
+        block10volt=3.0 + sin(random(1,4));
+        block11volt=4.0 + sin(random(1,3));
+        block12volt=3.0 + sin(random(1,4));
+        block13volt=4.0 + sin(random(1,3));
+        block14volt=3.0 + sin(random(1,4)); block1Res=1.0 + sin(random(1,3));
+        block2Res=1.0 + sin(random(1,3));
+        block3Res=1.0 + sin(random(1,3));
+        block4Res=0.0 + sin(random(1,3));
+        block5Res=0.0 + sin(random(1,4));
+        block6Res=0.0 + sin(random(1,4));
+        block7Res=0.0 + sin(random(1,4));
+        block8Res=0.0 + sin(random(1,4));
+        block9Res=0.0 + sin(random(1,3));
+        block10Res=0.0 + sin(random(1,4));
+        block11Res=0.0 + sin(random(1,3));
+        block12Res=001.0 + sin(random(1,4));
+        block13Res=00.0 + sin(random(1,3));
+        block14Res=0003.0 + sin(random(1,4));
+
+        temp1 = 25.0 + sin(random(1,4));
+        temp2 = 25.0 + sin(random(1,4));
+        
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"},\"minVolt\":{\"value\":%f,\"unit\":\"v\"},\"maxTemp\":{\"value\":%f,\"unit\":\"C\"},\"minTemp\":{\"value\":%f,\"unit\":\"C\"},\"remainCap\":{\"value\":%f,\"unit\":\"Ah\"},\"totalVolt\":{\"value\":%f,\"unit\":\"v\"},\"current\":{\"value\":%f,\"unit\":\"A\"},\"SOC\":%f,\"numCells\":%i,\"numString\":%i,\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}", maxVolt,minVolt,maxTemp,minTemp,remainCap,totalVolt,current,SOC,numCells,numString,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/batteryStatus", msg);
+        
+        snprintf(msg, MSG_BUFFER_SIZE,"{\"block1\":%f,\"block2\":%f,\"block3\":%f,\"block4\":%f,\"block5\":%f,\"block6\":%f,\"block7\":%f,\"block8\":%f,\"block9\":%f,\"block10\":%f,\"block11\":%f,\"block12\":%f,\"block13\":%f,\"block14\":%f,\"unit\":\"v\",\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",block1volt,block2volt,block3volt,block4volt,block5volt,block6volt,block7volt,block8volt,block9volt,block10volt,block11volt,block12volt,block13volt,block14volt,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/cellVoltage", msg);
+
+         snprintf(msg, MSG_BUFFER_SIZE,"{\"block1\":%f,\"block2\":%f,\"block3\":%f,\"block4\":%f,\"block5\":%f,\"block6\":%f,\"block7\":%f,\"block8\":%f,\"block9\":%f,\"block10\":%f,\"block11\":%f,\"block12\":%f,\"block13\":%f,\"block14\":%f,\"unit\":\"v\",\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",block1Res,block2Res,block3Res,block4Res,block5Res,block6Res,block7Res,block8Res,block9Res,block10Res,block11Res,block12Res,block13Res,block14Res,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/internalResistance", msg);
+
+
+         snprintf(msg, MSG_BUFFER_SIZE,"{\"voltageLow\":%i,\"tempHigh\":%i,\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",1,1,milliseconds,deviceID);
+        ispublished =   client.publish("data/Alerts", msg);
+     
+        snprintf(msg, MSG_BUFFER_SIZE,"{\"temp1\":%f,\"temp2\":%f,\"unit\":\"C\",\"elapseTime\":{\"value\":%i,\"unit\":\"ms\"},\"DeviceID\":%i}",temp1,temp2,milliseconds,deviceID);
+        ispublished =   client.publish("data/monitor/batteryTemperature", msg);
   }
 
-
-void rotateEggs()
-{
-  for (pos = 0; pos <= 60; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(150);                       // waits 15ms for the servo to reach the position
-  }
-  for (pos = 60; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(150);                       // waits 15ms for the servo to reach the position
-  }
 }
