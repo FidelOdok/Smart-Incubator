@@ -42,6 +42,9 @@ int milliseconds=0;
 //Configuration Variable
 const char *fingerprint PROGMEM = "4B 20 57 1B FA 16 8D 63 2B 7F 64 CD 41 92 CB 22 3E 19 FB 77";
 
+int ledPin =0;
+int dataPin =0;
+
 int pos=0;
 
 WiFiClientSecure espClient;
@@ -102,7 +105,7 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     String clientId = "wattflow";
-    clientId += String(deviceID);
+    clientId += String(2345);
     if(client.connect(clientId.c_str(),mqtt_username,mqtt_password,"holder",0,false,"holder",true)) {
       
         Serial.println("wattflow connected");
