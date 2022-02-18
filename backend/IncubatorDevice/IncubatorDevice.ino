@@ -59,7 +59,7 @@ void setup_wifi() {
     Serial.begin(115200);
     
     WiFiManager wm;
-    wm.resetSettings();
+    //wm.resetSettings();
 
     bool res;
     res = wm.autoConnect("Trip","potential"); // password protected ap
@@ -96,7 +96,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
         digitalWrite(ledPin, LOW);  
          digitalWrite(dataPin,LOW); 
       }
-
 }
 
 
@@ -161,13 +160,9 @@ void loop() {
         lastMsg = now;
         if(value<30)value++;
         else value=5;
-     
-    
         maxVolt=4.0 + sin(random(1,3));
-      
         snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}", maxVolt);
         ispublished =   client.publish("data/monitor/batteryStatus", msg);
-       
   }
 
 }
