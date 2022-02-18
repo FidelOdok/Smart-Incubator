@@ -40,7 +40,7 @@ bool accesspoint = true;
 int milliseconds=0;
 
 //Configuration Variable
-const char *fingerprint PROGMEM = "4B 20 57 1B FA 16 8D 63 2B 7F 64 CD 41 92 CB 22 3E 19 FB 77";
+const char *fingerprint PROGMEM = "16 5B 4B A3 A7 8A 59 C6 14 44 CA FF 3E AF F4 7C 70 7D B1 9F";
 
 int ledPin =0;
 int dataPin =0;
