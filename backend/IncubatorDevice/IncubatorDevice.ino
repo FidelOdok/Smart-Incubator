@@ -109,7 +109,7 @@ void reconnect() {
       
         Serial.println("wattflow connected");
     
-        maxVolt=4.0 + sin(random(1,3));
+        maxVolt=4.0 + sin(random(1,10))*5;
        
         
         snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}}", maxVolt);
@@ -159,7 +159,7 @@ void loop() {
         lastMsg = now;
         if(value<30)value++;
         else value=5;
-        maxVolt=4.0 + sin(random(1,3));
+        maxVolt=4.0 + sin(random(1,10))*5;
         snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}}", maxVolt);
         ispublished =   client.publish("data/monitor/batteryStatus", msg);
   }

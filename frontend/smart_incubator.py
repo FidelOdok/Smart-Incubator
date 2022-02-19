@@ -25,7 +25,6 @@ cur = conn.cursor()
 # An execute command that creates a new table
 #cur.execute("CREATE TABLE incubator(id serial PRIMARY KEY, value timestamp, humidity numeric, temperature numeric);")
 
-data = read_csv('timeseries.csv')
 
 insert_sql = """INSERT INTO incubator(value, humidity, temperature) VALUES(%s, %s, %s)"""
 
