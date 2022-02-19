@@ -112,7 +112,7 @@ void reconnect() {
         maxVolt=4.0 + sin(random(1,3));
        
         
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}", maxVolt);
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}}", maxVolt);
         ispublished =   client.publish("data/monitor/batteryStatus", msg);
         
     
@@ -160,7 +160,7 @@ void loop() {
         if(value<30)value++;
         else value=5;
         maxVolt=4.0 + sin(random(1,3));
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}", maxVolt);
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}}", maxVolt);
         ispublished =   client.publish("data/monitor/batteryStatus", msg);
   }
 
