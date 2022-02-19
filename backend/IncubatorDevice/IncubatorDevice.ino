@@ -42,7 +42,7 @@ int milliseconds=0;
 //Configuration Variable
 const char *fingerprint PROGMEM = "16 5B 4B A3 A7 8A 59 C6 14 44 CA FF 3E AF F4 7C 70 7D B1 9F";
 
-int ledPin =0;
+int ledPin =2;
 int dataPin =0;
 
 int pos=0;
@@ -59,10 +59,10 @@ void setup_wifi() {
     Serial.begin(115200);
     
     WiFiManager wm;
-    //wm.resetSettings();
+    wm.resetSettings();
 
     bool res;
-    res = wm.autoConnect("Trip","potential"); // password protected ap
+    res = wm.autoConnect("incubator","Incubator@12345"); // password protected ap
 
     if(!res) {
         Serial.println("Failed to connect");
