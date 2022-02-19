@@ -59,7 +59,7 @@ void setup_wifi() {
     Serial.begin(115200);
     
     WiFiManager wm;
-    wm.resetSettings();
+    //wm.resetSettings();
 
     bool res;
     res = wm.autoConnect("incubator","Incubator@12345"); // password protected ap
