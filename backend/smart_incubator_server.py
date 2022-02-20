@@ -38,6 +38,6 @@ while True:
     
     msg = dumps(msg)
     
-    client.publish("data/monitor/batteryStatus", payload=msg, qos=0)
+    client.publish("data/monitor/incubatorStatus", payload=msg, qos=0)
     #client.loop_forever()
     sleep(5)

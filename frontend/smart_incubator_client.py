@@ -71,6 +71,6 @@ client.on_message = on_message
 
 
 
-client.subscribe("data/monitor/batteryStatus", qos=0)
+client.subscribe("data/monitor/incubatorStatus", qos=0)
 
 client.loop_forever()

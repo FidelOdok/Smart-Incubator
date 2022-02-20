@@ -32,7 +32,11 @@ int value =0;
 /***
  Device battery Status declerations
 ***/
-float tempreature=0;
+float tempreature = 0;
+float humidity    = 0;
+float humidity    = 0;
+float maxPower    = 0;
+float heaterOntime = 0;
 
 
 bool accesspoint = true;
@@ -109,11 +113,14 @@ void reconnect() {
       
         Serial.println("wattflow connected");
     
-        tempreature=4.0 + sin(random(1,10))*5;
-       
+        tempreature=   sin(random(1,10))*40;
+        humidity    = 50 + sin(random(1,10))*50;
+        humidity    = 50 + sin(random(1,10))*50;
+        maxPower    = 300 + sin(random())*100;
+        heaterOntime   = ceil(sin(random(1,1000)));
         
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"tempreature\":{\"value\":%f,\"unit\":\"C\"}}", tempreature);
-        ispublished =   client.publish("data/monitor/batteryStatus", msg);
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"tempreature\":{\"value\":%f,\"unit\":\"C\"},\"humidity\":{\"value\":%f,\"unit\":\"H\"},\"inputVoltage\":{\"value\":%f,\"unit\":\"V\"},\"maxPower\":{\"value\":%f,\"unit\":\"W\"},\"heaterOntime\":{\"value\":%f,\"unit\":\" \"}}", tempreature,humidity,inputVoltage,maxPower,heaterOntime);
+        ispublished =   client.publish("data/monitor/incubatorStatus", msg);
         
     
         client.subscribe("2345/control/deviceState");
@@ -159,9 +166,13 @@ void loop() {
         lastMsg = now;
         if(value<30)value++;
         else value=5;
-        tempreature=4.0 + sin(random(1,10))*5;
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"tempreature\":{\"value\":%f,\"unit\":\"C\"}}", tempreature);
-        ispublished =   client.publish("data/monitor/batteryStatus", msg);
+        tempreature=   sin(random(1,10))*40;
+        humidity    = 50 + sin(random(1,10))*50;
+        humidity    = 50 + sin(random(1,10))*50;
+        maxPower    = 300 + sin(random())*100;
+        heaterOntime   = ceil(sin(random(1,1000)));
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"tempreature\":{\"value\":%f,\"unit\":\"C\"},\"humidity\":{\"value\":%f,\"unit\":\"H\"},\"inputVoltage\":{\"value\":%f,\"unit\":\"V\"},\"maxPower\":{\"value\":%f,\"unit\":\"W\"},\"heaterOntime\":{\"value\":%f,\"unit\":\" \"}}", tempreature,humidity,inputVoltage,maxPower,heaterOntime);
+        ispublished =   client.publish("data/monitor/incubatorStatus", msg);
   }
 
 }
