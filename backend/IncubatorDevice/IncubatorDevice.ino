@@ -32,7 +32,7 @@ int value =0;
 /***
  Device battery Status declerations
 ***/
-float maxVolt=0;
+float tempreature=0;
 
 
 bool accesspoint = true;
@@ -109,10 +109,10 @@ void reconnect() {
       
         Serial.println("wattflow connected");
     
-        maxVolt=4.0 + sin(random(1,10))*5;
+        tempreature=4.0 + sin(random(1,10))*5;
        
         
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}}", maxVolt);
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"tempreature\":{\"value\":%f,\"unit\":\"C\"}}", tempreature);
         ispublished =   client.publish("data/monitor/batteryStatus", msg);
         
     
@@ -159,8 +159,8 @@ void loop() {
         lastMsg = now;
         if(value<30)value++;
         else value=5;
-        maxVolt=4.0 + sin(random(1,10))*5;
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"maxVolt\":{\"value\":%f,\"unit\":\"v\"}}", maxVolt);
+        tempreature=4.0 + sin(random(1,10))*5;
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"tempreature\":{\"value\":%f,\"unit\":\"C\"}}", tempreature);
         ispublished =   client.publish("data/monitor/batteryStatus", msg);
   }
 
